@@ -292,13 +292,6 @@ def click3():
     option3.geometry("500x400")
     option3.title('Option 2')
 
-    freq = ttk.Entry(option3)
-    Txheight = ttk.Entry(option3)
-    Rxheight = ttk.Entry(option3)
-    salop = ttk.Entry(option3)
-    MinDistance = ttk.Entry(option3)
-    MaxDistance = ttk.Entry(option3)
-
     img_path = [None]
 
     def upload_picture():
@@ -382,22 +375,6 @@ def click3():
             if save_path:
                 df.to_excel(save_path, index=False)
 
-    ttk.Label(option3, text="Frequency (MHz):").grid(row=1, column=0, padx=10, pady=5, sticky="e")
-    freq.grid(row=1, column=1)
-
-    ttk.Label(option3, text="Tx Height (m):").grid(row=2, column=0, padx=10, pady=5, sticky="e")
-    Txheight.grid(row=2, column=1)
-
-    ttk.Label(option3, text="Rx Height (m):").grid(row=3, column=0, padx=10, pady=5, sticky="e")
-    Rxheight.grid(row=3, column=1)
-
-    ttk.Label(option3, text="Salop (n):").grid(row=4, column=0, padx=10, pady=5, sticky="e")
-    salop.grid(row=4, column=1)
-
-    ttk.Label(option3, text="Distance Range (km):").grid(row=5, column=0, padx=10, pady=5, sticky="e")
-    MinDistance.grid(row=5, column=1, padx=5, pady=5)
-    ttk.Label(option3, text="to").grid(row=5, column=2, padx=5, pady=5)
-    MaxDistance.grid(row=5, column=3, padx=5, pady=5)
 
     upload_button = ttk.Button(option3, text="Upload Picture", command=upload_picture)
     upload_button.grid(row=6, column=1, pady=10)
@@ -406,7 +383,6 @@ def click3():
     image_label.grid(row=8, column=1, pady=10)
 
     ttk.Button(option3, text="Generate Plot", command=extract_points).grid(row=7, column=1, padx=10, pady=10)
-    ttk.Button(option3, text="Clear").grid(row=7, column=0, padx=10, pady=10)
 
 # Main window
 window = Tk()
