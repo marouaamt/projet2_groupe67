@@ -102,10 +102,7 @@ def click2():
     option2.geometry("500x400")
     option2.title('Option 2')
 
-    def openFile():
-        filePath = filedialog.askopenfilename(
-            filetypes=[("CSV files", "*.csv"), ("Excel files", "*.xlsx")]
-        )
+    
 
     freq = ttk.Entry(option2)
     Txheight = ttk.Entry(option2)
@@ -138,29 +135,17 @@ def click2():
             messagebox.showerror("Invalid value. Please enter numbers only.")
             return
 
-        d_user, loss_user = read_excel_data()
+        d_user, loss_user = read_excel_data(filePath)
         analyze_and_plot(f, h_tx, h_rx, slope_threshold, d_user, loss_user, d_min, d_max)
 
-    def get_user_inputs():
-        while True:
-            try:
-                f = float(freq.get()) if freq.get() else 900
-                h_tx = float(Txheight.get())
-                h_rx = float(Rxheight.get())
-                slope_threshold = float(salop.get())
-                d_min = float(MinDistance.get())
-                d_max = float(MaxDistance.get())
-
-                if d_min >= d_max:
-                    messagebox.showerror("Invalid range. Minimum distance must be less than maximum distance.")
-                    return
-            except ValueError:
-                messagebox.showerror("Invalid value. Please enter numbers only.")
-                return
-
-            return f, h_tx, h_rx, slope_threshold, d_min, d_max
-
     # === Lecture Excel ===
+
+    def openFile():
+        global filePath
+        filePath = filedialog.askopenfilename(
+            filetypes=[("Excel files", "*.xlsx")]
+        )
+
     def read_excel_data(file_name="donnees.xlsx"):
         df = pd.read_excel(file_name)
         return df['distance'].values, df['perte_mesuree'].values
