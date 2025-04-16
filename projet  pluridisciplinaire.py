@@ -8,6 +8,9 @@ import numpy as np
 from tkinter import filedialog
 import pandas as pd
 from PIL import Image, ImageTk
+import os
+from tkinter import filedialog, simpledialog, ttk
+import cv2
 
 def click1():
     new_window = Tk()
@@ -296,7 +299,8 @@ def click3():
     MinDistance = ttk.Entry(option3)
     MaxDistance = ttk.Entry(option3)
 
-    # Upload image function
+    img_path = [None]
+
     def upload_picture():
         file_path = filedialog.askopenfilename(
             title="Select an image",
@@ -304,12 +308,80 @@ def click3():
         )
         if file_path:
             img = Image.open(file_path)
-            img.thumbnail((300, 300))  # Resize for display
+            img.thumbnail((300, 300))
             photo = ImageTk.PhotoImage(img)
             image_label.config(image=photo)
-            image_label.image = photo  # Keep reference
+            image_label.image = photo
+            img_path[0] = file_path
 
-    # Interface
+    def extract_points():
+        if not img_path[0]:
+            return
+
+        img = cv2.imread(img_path[0])
+        if img is None:
+            return
+
+        plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+        plt.title("Click 3 points: Origin, X-max, Y-max")
+        pts = plt.ginput(3, timeout=0)
+        plt.close()
+
+        if len(pts) != 3:
+            return
+
+        (pixel_origin, pixel_xmax, pixel_ymax) = pts
+        ox, oy = pixel_origin
+        xmax_px, _ = pixel_xmax
+        _, ymax_py = pixel_ymax
+
+        x_min_box = int(min(ox, xmax_px))
+        x_max_box = int(max(ox, xmax_px))
+        y_min_box = int(min(oy, ymax_py))
+        y_max_box = int(max(oy, ymax_py))
+
+        def get_val(prompt):
+            return float(simpledialog.askstring("Axis Input", prompt))
+
+        x_min_val = get_val("Enter x-axis minimum value:")
+        x_max_val = get_val("Enter x-axis maximum value:")
+        y_min_val = get_val("Enter y-axis minimum value:")
+        y_max_val = get_val("Enter y-axis maximum value:")
+
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        _, binary = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        def pixel_to_graph(x_pix, y_pix):
+            x = x_min_val + (x_max_val - x_min_val) * (x_pix - ox) / (xmax_px - ox)
+            y = y_min_val + (y_max_val - y_min_val) * (oy - y_pix) / (oy - ymax_py)
+            return round(x, 2), round(y, 2)
+
+        real_coords = []
+        for cnt in contours:
+            area = cv2.contourArea(cnt)
+            if area < 5:
+                continue
+            M = cv2.moments(cnt)
+            if M["m00"] != 0:
+                cx = int(M["m10"] / M["m00"])
+                cy = int(M["m01"] / M["m00"])
+                if x_min_box < cx < x_max_box and y_min_box < cy < y_max_box:
+                    gx, gy = pixel_to_graph(cx, cy)
+                    real_coords.append((gx, gy))
+
+        if real_coords:
+            df = pd.DataFrame(real_coords, columns=["X", "Y"])
+            save_path = filedialog.asksaveasfilename(
+                defaultextension=".xlsx",
+                filetypes=[("Excel files", "*.xlsx")],
+                title="Save extracted coordinates as"
+            )
+            if save_path:
+                df.to_excel(save_path, index=False)
+
     ttk.Label(option3, text="Frequency (MHz):").grid(row=1, column=0, padx=10, pady=5, sticky="e")
     freq.grid(row=1, column=1)
 
@@ -327,18 +399,14 @@ def click3():
     ttk.Label(option3, text="to").grid(row=5, column=2, padx=5, pady=5)
     MaxDistance.grid(row=5, column=3, padx=5, pady=5)
 
-    # image button
     upload_button = ttk.Button(option3, text="Upload Picture", command=upload_picture)
     upload_button.grid(row=6, column=1, pady=10)
 
-    # Image display label
     image_label = ttk.Label(option3)
     image_label.grid(row=8, column=1, pady=10)
 
-    # buttons
-    ttk.Button(option3, text="Generate Plot").grid(row=7, column=1, padx=10, pady=10)
+    ttk.Button(option3, text="Generate Plot", command=extract_points).grid(row=7, column=1, padx=10, pady=10)
     ttk.Button(option3, text="Clear").grid(row=7, column=0, padx=10, pady=10)
-
 
 # Main window
 window = Tk()
