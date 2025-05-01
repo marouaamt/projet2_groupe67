@@ -16,12 +16,15 @@ def click1():
     new_window = Tk()
     new_window.geometry("400x400")
     new_window.title('Option 1')
+    new_window.configure(bg="#f0f4f8")
+    new_window.resizable(False, False)
+    
 
     ttk.Label(new_window,
               text=" Okumura-Hata Model",
               font=("Helvetica", 20, "bold"),
               background="#f0f4f8",
-              foreground="#333").grid(row=0, column=0, columnspan=2, pady=10)
+              foreground="#333").grid(row=0, column=0, columnspan=2,padx=50, pady=10)
 
     freq = ttk.Entry(new_window)
     Txheight = ttk.Entry(new_window)
@@ -43,20 +46,20 @@ def click1():
             distance = float(Distance.get())
 
             if not (150 <= frequency <= 1500):
-                print("Enter frequency (in MHz) where 150 <= frequency <= 1500")
+                messagebox.showerror("Invalid frequency", "Enter frequency (in MHz) where 150 <= frequency <= 1500")
                 return
             if not (30 <= hb <= 200):
-                print("Enter Tx height (30 <= hb <= 200 m)")
+                messagebox.showerror("Invalid Tx height", "Enter Tx height (in m) where 30 <= hb <= 200")
                 return
             if not (1 <= hm <= 10):
-                print("Enter Rx height (1 <= hm <= 10 m)")
+                messagebox.showerror("Invalid Rx height", "Enter Rx height (in m) where 1 <= hm <= 10")
                 return
             if not (1 <= distance <= 20):
-                print("Enter distance (1 <= distance <= 20 km)")
+                messagebox.showerror("Invalid distance", "Enter distance (in km) where 1 <= distance <= 20")
                 return
 
         except ValueError:
-            print("Invalid value. Please enter numbers only.")
+            messagebox.showerror("Invalid value", "Please enter numbers only.")
             return
 
         step = 1  # step constante 1 km
@@ -96,14 +99,25 @@ def click1():
     ttk.Label(new_window, text="Distance (km):").grid(row=4, column=0, padx=10, pady=5, sticky="e")
     Distance.grid(row=4, column=1)
 
-    ttk.Button(new_window, text="Generate Plot", command=sumbitData).grid(row=5, column=1, padx=10, pady=10)
-    ttk.Button(new_window, text="Clear", command=clearData).grid(row=5, column=0, padx=10, pady=10)
 
+
+
+    ttk.Button(new_window, text="Generate Plot", command=sumbitData).grid(row=5, column=1, padx=15, pady=10)
+    ttk.Button(new_window, text="Clear", command=clearData).grid(row=5, column=0, padx=15, pady=10)
 
 def click2():
     option2 = Tk()
     option2.geometry("500x400")
     option2.title('Option 2')
+    option2.configure(bg="#f0f4f8")
+    option2.resizable(False, False)
+
+    ttk.Label(option2,
+              text=" Loading Excel Data",
+              font=("Helvetica", 20, "bold"),
+              background="#f0f4f8",
+              foreground="#333").grid(row=0, column=0, columnspan=2,padx=20, pady=20)
+
 
     
 
@@ -217,9 +231,6 @@ def click2():
                 env = detect_env(pente)
                 environnements.append(env)
 
-                print(f"\n📍 Segment {len(segments)} détecté")
-                print(f"🗺️ Environnement : {env}")
-                print("💠 Fonction utilisée : Lp(d) = k + 10·log10(d² / (1 + S1 + S2))")
                 start_idx = end_idx
 
         segments.append((start_idx, len(d_plot) - 1))
@@ -282,15 +293,24 @@ def click2():
 
     ##buttons
 
-    ttk.Button(option2, text="Load Excel Data", command=openFile).grid(row=6, column=1, padx=10, pady=10)
+    ttk.Button(option2, text="Load Excel Data", command=openFile).grid(row=6, column=1, padx=10, pady=40)
     ttk.Button(option2, text="Generate Plot", command=sumbitData).grid(row=7, column=1, padx=10, pady=10)
     ttk.Button(option2, text="Clear", command=clearData).grid(row=7, column=0, padx=10, pady=10)
 
 
 def click3():
-    option3 = tk.Tk()
-    option3.geometry("500x400")
-    option3.title('Option 2')
+    option3 = Tk()
+    option3.geometry("400x400")
+    option3.title('Option 3')
+    option3.configure(bg="#f0f4f8")
+    option3.resizable(False, False)
+
+    ttk.Label(option3,
+              text=" upload image",
+              font=("Helvetica", 20, "bold"),
+              background="#f0f4f8",
+              foreground="#333").grid(row=0, column=0, columnspan=2,padx=20, pady=20)
+
 
     img_path = [None]
 
@@ -377,12 +397,12 @@ def click3():
 
 
     upload_button = ttk.Button(option3, text="Upload Picture", command=upload_picture)
-    upload_button.grid(row=6, column=1, pady=10)
+    upload_button.grid(row=6, column=1, pady=40)
 
     image_label = ttk.Label(option3)
     image_label.grid(row=8, column=1, pady=10)
 
-    ttk.Button(option3, text="Generate Plot", command=extract_points).grid(row=7, column=1, padx=10, pady=10)
+    ttk.Button(option3, text="Generate Plot", command=extract_points  ).grid(row=7, column=1, padx=10, pady=50)
 
 # Main window
 window = Tk()
@@ -391,6 +411,7 @@ window.title("Projet PP")
 window.configure(bg="#f0f4f8")
 
 # Styling
+
 style = ttk.Style()
 style.theme_use("clam")
 style.configure("TButton",
