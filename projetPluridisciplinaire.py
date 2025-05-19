@@ -11,6 +11,7 @@ from PIL import Image, ImageTk
 import os
 from tkinter import filedialog, simpledialog, ttk
 import cv2
+ //option1:okahumora model
 
 def click1():
     new_window = Tk()
@@ -18,8 +19,6 @@ def click1():
     new_window.title('Option 1')
     new_window.configure(bg="#f0f4f8")
     new_window.resizable(False, False)
-    
-
     ttk.Label(new_window,
               text=" Okumura-Hata Model",
               font=("Helvetica", 20, "bold"),
@@ -68,7 +67,6 @@ def click1():
 
         ys = []
         ys2 = []
-
         for d in xs:
             lurban = 69.55 + 26.16 * math.log10(frequency) - 13.82 * math.log10(hb) - a + \
                      (44.9 - 6.55 * math.log10(hb)) * math.log10(d)
@@ -117,9 +115,6 @@ def click2():
               font=("Helvetica", 20, "bold"),
               background="#f0f4f8",
               foreground="#333").grid(row=0, column=0, columnspan=2,padx=20, pady=20)
-
-
-    
 
     freq = ttk.Entry(option2)
     Txheight = ttk.Entry(option2)
