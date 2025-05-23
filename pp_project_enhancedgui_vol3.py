@@ -197,6 +197,7 @@ def click2():
     option2.geometry("800x700")
     option2.resizable(False, False)
     option2.title("the three slope model and the cloud piont ")
+    center_window(option2)
     filePath = None
     usb_file_paths = []
     customtkinter.CTkLabel(option2, text="The three slope model and the cloud piont ",
@@ -205,15 +206,15 @@ def click2():
     # Input fields
     freq = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50,
                                   placeholder_text="enter frequency in (MHz)")
-    freq.pack(pady=10)
+    freq.pack(pady=15)
     Txheight = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50,
                                       placeholder_text="enter transmitter height in (m)")
-    Txheight.pack(pady=10)
+    Txheight.pack(pady=15)
     Rxheight = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50,
                                       placeholder_text="enter receiver height in (m)")
-    Rxheight.pack(pady=10)
+    Rxheight.pack(pady=15)
     salop = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50, placeholder_text="enter salop (n) ")
-    salop.pack(pady=10)
+    salop.pack(pady=15)
     customtkinter.CTkLabel(option2, text=" enter the distance range in (km) ", font=("Helvetica", 14, "bold"), ).pack(
         pady=5)
     MinDistance = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50, placeholder_text="from ")
@@ -240,21 +241,21 @@ def click2():
         nonlocal usb_file_paths
         xlsx_files, file_paths = find_xlsx_files_in_usb()
         if not xlsx_files:
-            show_error("No Files", "No EXCEL files in this USB or USB not connected." , parent = option2)
+            show_error("No Files", "No EXCEL files in this USB or USB not connected.")
             return
         usb_file_paths = file_paths
         usb_combo['values'] = xlsx_files
         usb_combo.current(0)
-        show_error("Loaded", "USB Excel files loaded." , parent = option2)
+        show_error("Loaded", "USB Excel files loaded.")
 
     def use_selected_usb_file():
         nonlocal filePath
         idx = usb_combo.current()
         if 0 <= idx < len(usb_file_paths):
             filePath = usb_file_paths[idx]
-            show_error("Selected", f"Using file: {filePath}" , parent = option2)
+            show_error("Selected", f"Using file: {filePath}")
         else:
-            show_error("Error", "No file selected from USB." , parent = option2)
+            show_error("Error", "No file selected from USB.")
 
     def read_excel_data(file_name):
         ext = os.path.splitext(file_name)[1].lower()
@@ -265,12 +266,12 @@ def click2():
             elif ext == ".xls":
                 df = pd.read_excel(file_name, engine="xlrd")
             else:
-                raise show_error("error", "Unsupported file type. Please select a .xls or .xlsx file." , parent = option2)
+                raise show_error("error", "Unsupported file type. Please select a .xls or .xlsx file.")
         except Exception as e:
-            raise show_error("error", f"Failed to read Excel file: {str(e)}" , parent = option2)
+            raise show_error("error", f"Failed to read Excel file: {str(e)}")
 
         if df.shape[1] < 2:
-            return show_error("error", "The Excel file must contain at least two columns." , parent = option2)
+            return show_error("error", "The Excel file must contain at least two columns.")
 
         distances = df.iloc[:, 0].values
         losses = df.iloc[:, 1].values
@@ -370,38 +371,38 @@ def click2():
             d_max = float(MaxDistance.get())
             slope_threshold = float(salop.get())
             if f <= 0:
-                return show_error("frenquency error", "La fréquence doit être strictement positive" , parent = option2)
+                return show_error("frenquency error", "La fréquence doit être strictement positive")
             if not (10 <= h_tx <= 200):
-                return show_error("transmitter heigh erro", "La hauteur Tx doit être entre 10m et 200m" , parent = option2)
+                return show_error("transmitter heigh erro", "La hauteur Tx doit être entre 10m et 200m")
             if not (1 <= h_rx <= 10):
-                return show_error("receiver heigh error ", "La hauteur Rx doit être entre 1m et 10m" , parent = option2)
+                return show_error("receiver heigh error ", "La hauteur Rx doit être entre 1m et 10m")
             if d_min <= 0 or d_max <= d_min:
-                return show_error("distance contrainte error ", "Les distances doivent être positives et d_max >d_min" , parent = option2)
+                return show_error("distance contrainte error ", "Les distances doivent être positives et d_max >d_min")
 
             if not filePath:
-                show_error("Error", "No Excel file selected." )
+                show_error("Error", "No Excel file selected.")
                 return
             d_user, loss_user = read_excel_data(filePath)
             analyze_and_plot(f, h_tx, h_rx, slope_threshold, d_user, loss_user, d_min, d_max)
 
         except Exception as e:
-            show_error("Error", str(e) , )
+            show_error("Error", str(e))
 
     customtkinter.CTkButton(option2, text="Browse Excel", command=openFile, height=40, width=200,
-                            corner_radius=50).pack(pady=10)
+                            corner_radius=50).pack(pady=15)
     customtkinter.CTkLabel(option2, text="Choose Excel from USB:", font=("Helvetica", 14)).pack(pady=5)
 
     # ComboBox
     usb_combo = customtkinter.CTkComboBox(option2, values=[], width=400, height=40, corner_radius=50)
-    usb_combo.pack(pady=10)
+    usb_combo.pack(pady=15)
     customtkinter.CTkButton(option2, text="Load from USB", command=load_from_usb, height=40, width=200,
-                            corner_radius=50).pack(pady=10)
+                            corner_radius=50).pack(pady=15)
     customtkinter.CTkButton(option2, text="Use Selected USB File", command=use_selected_usb_file, height=40, width=200,
-                            corner_radius=50).pack(pady=10)
+                            corner_radius=50).pack(pady=15)
     customtkinter.CTkButton(option2, text="Generate Plot", command=sumbitData, height=40, width=200,
-                            corner_radius=50).pack(pady=10)
+                            corner_radius=50).pack(pady=15)
     customtkinter.CTkButton(option2, text="Clear", command=clearData, height=40, width=200, corner_radius=50).pack(
-        pady=10)
+        pady=15)
 
 
 def click3():
