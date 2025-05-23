@@ -244,18 +244,23 @@ def click2():
             show_error("No Files", "No EXCEL files in this USB or USB not connected.")
             return
         usb_file_paths = file_paths
-        usb_combo['values'] = xlsx_files
-        usb_combo.current(0)
+        usb_combo.configure(values=xlsx_files)
+        usb_combo.set(xlsx_files[0])
         show_error("Loaded", "USB Excel files loaded.")
-
+    
     def use_selected_usb_file():
         nonlocal filePath
-        idx = usb_combo.current()
-        if 0 <= idx < len(usb_file_paths):
+        selected_value = usb_combo.get()
+        if not selected_value:
+            show_error("Error", "No file selected from USB.")
+            return
+        try:
+            idx = usb_combo.cget("values").index(selected_value)
             filePath = usb_file_paths[idx]
             show_error("Selected", f"Using file: {filePath}")
-        else:
-            show_error("Error", "No file selected from USB.")
+        except ValueError:
+            show_error("Error", "Selected file not found in USB paths.")
+
 
     def read_excel_data(file_name):
         ext = os.path.splitext(file_name)[1].lower()
@@ -410,6 +415,7 @@ def click3():
     option3 = customtkinter.CTkToplevel()
     option3.title("Manual Point Selector (No Class Version)")
     option3.geometry("700x700")
+    center_window1(option3, 700, 700)
     option3.attributes('-topmost', 1)
 
     global set_axis_btn, save_btn, clear_last_btn, clear_all_btn
@@ -622,15 +628,7 @@ def click3():
         else:
             show_error("Cancelled", "Save operation cancelled.")
 
-        def center_window(window):
-            window.update_idletasks()
-            width = window.winfo_width()
-            height = window.winfo_height()
-            screen_width = window.winfo_screenwidth()
-            screen_height = window.winfo_screenheight()
-            x = (screen_width // 2) - (width // 2)
-            y = (screen_height // 2) - (height // 2)
-            window.geometry(f"{width}x{height}+{x}+{y}")
+
 
 
     # GUI setup
@@ -668,6 +666,14 @@ def center_window(window):
     y = (screen_height - height) // 2
 
     window.geometry(f"{width}x{height}+{x}+{y}")
+    
+def center_window1(window, width, height):
+    ##center the main window
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+    x = int((screen_width - width) / 2)
+    y = int((screen_height - height) / 2)
+    window.geometry(f"{width}x{height}+{x}+{y}")
 
 
 # Main window
@@ -675,6 +681,7 @@ customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("blue")
 window = customtkinter.CTk()
 window.geometry("900x800")
+center_window1(window, 900, 800)
 window.title("projet pluridisciplinaire")
 window.configure(bg="#f0f4f8")
 
