@@ -21,7 +21,6 @@ import win32file
 # === USB DETECTION BACH NL9AW ALL DRIVES===
 # RESUME DE FOCTION SELECT ALL DRIVES C?B?E... THEN SELECT ONLY REMOVABLE DRIVES AKA REFERED TO WITH 2
 def get_usb_mountpoints():
-    
     DRIVE_REMOVABLE = 2
     usb_mounts = []
     for part in psutil.disk_partitions():
@@ -45,21 +44,20 @@ def find_xlsx_files_in_usb():
 
 
 def click1():
+    filePath = None
+    usb_file_paths = []
     new_window = customtkinter.CTkToplevel()
     new_window.attributes('-topmost', 1)
     new_window.geometry("500x600")
     new_window.title('OKUMURA-HATA MODEL GRAPH PLOTTING')
-    new_window.resizable(False, False)
     center_window(new_window)
     customtkinter.CTkLabel(new_window, text="Okumura-Hata Model", font=("Helvetica", 20, "bold"), ).pack(pady=20)
 
-    
     customtkinter.CTkLabel(new_window, text="frequency", font=("Helvetica", 15, "bold"), ).pack(pady=10)
 
     freq = customtkinter.CTkEntry(new_window, height=50, width=300, corner_radius=50,
                                   placeholder_text="enter frequency in MHz")
     freq.pack(pady=10)
-
 
     customtkinter.CTkLabel(new_window, text="Tx height", font=("Helvetica", 15, "bold"), ).pack(pady=10)
     Txheight = customtkinter.CTkEntry(new_window, height=50, width=300, corner_radius=50,
@@ -145,7 +143,53 @@ def click1():
             ys_suburban.append(l_suburban)
 
         return xs, ys_medium, ys_dense, ys_open, ys_suburban
+    def openFile():
+        nonlocal filePath
+        filePath = filedialog.askopenfilename(
+            parent=new_window,
+            title="Sélectionner un fichier Excel",
+            filetypes=[("Excel files", "*.xlsx")])
+    def load_from_usb():
+        nonlocal usb_file_paths
+        xlsx_files, file_paths = find_xlsx_files_in_usb()
+        if not xlsx_files:
+            show_error("No Files", "No EXCEL files in this USB or USB not connected.")
+            return
+        usb_file_paths = file_paths
+        usb_combo.configure(values=xlsx_files)
+        usb_combo.set(xlsx_files[0])
+        show_error("Loaded", "USB Excel files loaded.")
+    def read_excel_data(file_name):
+        ext = os.path.splitext(file_name)[1].lower()
 
+        try:
+            if ext == ".xlsx":
+                df = pd.read_excel(file_name, engine="openpyxl")
+            elif ext == ".xls":
+                df = pd.read_excel(file_name, engine="xlrd")
+            else:
+                raise show_error("error", "Unsupported file type. Please select a .xls or .xlsx file.")
+        except Exception as e:
+            raise show_error("error", f"Failed to read Excel file: {str(e)}")
+
+        if df.shape[1] < 2:
+            return show_error("error", "The Excel file must contain at least two columns.")
+
+        distances = df.iloc[:, 0].values
+        losses = df.iloc[:, 1].values
+        return distances, losses
+    def use_selected_usb_file():
+        nonlocal filePath
+        selected_value = usb_combo.get()
+        if not selected_value:
+            show_error("Error", "No file selected from USB.")
+            return
+        try:
+            idx = [os.path.basename(path) for path in usb_file_paths].index(selected_value)
+            filePath = usb_file_paths[idx]
+            show_error("Selected", f"Using file: {filePath}")
+        except ValueError:
+            show_error("Error", "Selected file not found in USB paths.")
     def plot_all_curves():
         result = compute_curves()
         if result is None:
@@ -164,12 +208,45 @@ def click1():
         plt.legend()
         plt.grid(True, which="both", linestyle='--', linewidth=0.5)
         plt.tight_layout()
-        plt.show(parent =new_window)
+        def choiceofpc ():
+            if show_points_cb.get():
+                d_user, loss_user = read_excel_data(filePath)
+                plt.scatter(d_user, loss_user, color='red', zorder=5, label='Experimental Data')
+                plt.show()
+            else:
+                plt.show()
+        choiceofpc()
 
-    customtkinter.CTkButton(new_window, height=70, width=200, font=("Helvetica", 24), hover_color="green",
-                            corner_radius=50, text="Generate Plot", command=plot_all_curves).pack(pady=20)
-    customtkinter.CTkButton(new_window, height=70, width=200, font=("Helvetica", 24), hover_color="green",
-                            corner_radius=50, text="clear", command=clearData).pack(pady=20)
+
+    def checkboxverif():
+        if show_points_cb.get():
+            usb_combo.configure(state="normal")
+            sf.configure(state="normal")
+            be.configure(state="normal")
+            lfu.configure(state="normal")
+        else:
+            usb_combo.configure(state="disabled")
+            sf.configure(state="disabled")
+            be.configure(state="disabled")
+            lfu.configure(state="disabled")
+
+    check_var = customtkinter.BooleanVar(value=False)
+    show_points_cb = customtkinter.CTkCheckBox(new_window, text="Show point cloud", variable=check_var, onvalue=True,offvalue=False, height=40, width=200, corner_radius=50)
+    show_points_cb.pack(pady=5)
+    show_points_cb.configure(command=checkboxverif)
+
+    be = customtkinter.CTkButton(new_window, text="Browse Excel", command=openFile, state="disabled", height=40, width=200, corner_radius=50)
+    be.pack(pady=5)
+    customtkinter.CTkLabel(new_window, text="Choose Excel from USB:", font=("Helvetica", 14)).pack(pady=5)
+    # ComboBox
+    usb_combo = customtkinter.CTkComboBox(new_window, values=[], width=400, height=40, corner_radius=50)
+    usb_combo.pack(pady=5)
+    lfu = customtkinter.CTkButton(new_window, text="Load from USB", command=load_from_usb, height=40, width=200, state="disabled", corner_radius=50)
+    lfu.pack(pady=5)
+    sf = customtkinter.CTkButton(new_window, text="Use Selected USB File", command=use_selected_usb_file, state="disabled", height=40, width=200, corner_radius=50)
+    sf.pack(pady=5)
+    customtkinter.CTkButton(new_window, text="Generate Plot", command=plot_all_curves, height=40, width=200, corner_radius=50).pack(pady=5)
+    customtkinter.CTkButton(new_window, text="Clear", command=clearData, height=40, width=200, corner_radius=50).pack(pady=5)
 
 
 #################### matochiwch hadi , hadi hiya ta3 error show message """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -195,27 +272,25 @@ def click2():
     option2 = customtkinter.CTkToplevel()
     option2.attributes('-topmost', 1)
     option2.geometry("500x650")
-    option2.title("the three slope model and the cloud point ")
+    option2.title("the three slope model and the cloud piont ")
     center_window(option2)
+
+
     filePath = None
     usb_file_paths = []
-    customtkinter.CTkLabel(option2, text="The three slope model and the cloud point ",
+    customtkinter.CTkLabel(option2, text="The three slope model and the cloud piont ",
                            font=("Helvetica", 20, "bold"), ).pack(pady=5)
 
     # Input fields
-    freq = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50,
-                                  placeholder_text="enter frequency in (MHz)")
+    freq = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50,placeholder_text="enter frequency in (MHz)")
     freq.pack(pady=5)
-    Txheight = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50,
-                                      placeholder_text="enter transmitter height in (m)")
+    Txheight = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50,placeholder_text="enter transmitter height in (m)")
     Txheight.pack(pady=5)
-    Rxheight = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50,
-                                      placeholder_text="enter receiver height in (m)")
+    Rxheight = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50, placeholder_text="enter receiver height in (m)")
     Rxheight.pack(pady=5)
     salop = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50, placeholder_text="enter salop (n) ")
     salop.pack(pady=5)
-    customtkinter.CTkLabel(option2, text=" enter the distance range in (km) ", font=("Helvetica", 14, "bold"), ).pack(
-        pady=5)
+    customtkinter.CTkLabel(option2, text=" enter the distance range in (km) ", font=("Helvetica", 14, "bold"), ).pack(pady=5)
     MinDistance = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50, placeholder_text="from ")
     MinDistance.pack(pady=5)
     MaxDistance = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50, placeholder_text="to ")
@@ -246,7 +321,7 @@ def click2():
         usb_combo.configure(values=xlsx_files)
         usb_combo.set(xlsx_files[0])
         show_error("Loaded", "USB Excel files loaded.")
-    
+
     def use_selected_usb_file():
         nonlocal filePath
         selected_value = usb_combo.get()
@@ -254,12 +329,11 @@ def click2():
             show_error("Error", "No file selected from USB.")
             return
         try:
-            idx= [os.path.basename(path) for path in usb_file_paths].index(selected_value)
+            idx = [os.path.basename(path) for path in usb_file_paths].index(selected_value)
             filePath = usb_file_paths[idx]
             show_error("Selected", f"Using file: {filePath}")
         except ValueError:
             show_error("Error", "Selected file not found in USB paths.")
-
 
     def read_excel_data(file_name):
         ext = os.path.splitext(file_name)[1].lower()
@@ -334,7 +408,6 @@ def click2():
         colors = ['blue', 'green', 'orange', 'purple', 'magenta', 'brown']
         for i, (s, e) in enumerate(segments):
             plt.plot(d_plot[s:e], lp_model[s:e], color=colors[i % len(colors)], label=f"{envs[i]} ({s}-{e})")
-        plt.scatter(d_user, loss_user, color='red', zorder=5, label='Experimental Data')
         plt.xscale('log')
         plt.xlabel("Distance (km)")
         plt.ylabel("Path Loss (dB)")
@@ -357,14 +430,20 @@ def click2():
 
         # Affichage de la MSE dans le graphique
         mse_text = f"MSE: {mse:.2f} dB²"
-        plt.text(0.5, 0.88, mse_text, transform=plt.gca().transAxes,
-                 fontsize=12, verticalalignment='top', color='red',
+        plt.text(0.5, 0.88, mse_text, transform=plt.gca().transAxes, fontsize=12, verticalalignment='top', color='red',
                  bbox=dict(facecolor='white', alpha=0.8))
-        plt.text(0.5, 0.88, f"MSE: {mse:.2f} dB²", transform=plt.gca().transAxes,
-                 fontsize=12, verticalalignment='top', color='red',
-                 bbox=dict(facecolor='white', alpha=0.8))
+        plt.text(0.5, 0.88, f"MSE: {mse:.2f} dB²", transform=plt.gca().transAxes, fontsize=12, verticalalignment='top',
+                 color='red', bbox=dict(facecolor='white', alpha=0.8))
         plt.tight_layout()
-        plt.show(parent =option2)
+        plt.show()
+        def choiceofpc ():
+            if show_points_cb.get():
+                plt.scatter(d_user, loss_user, color='red', zorder=5, label='Experimental Data')
+                plt.show()
+            else:
+                plt.show()
+
+        choiceofpc()
 
     def sumbitData():
         try:
@@ -383,30 +462,46 @@ def click2():
             if d_min <= 0 or d_max <= d_min:
                 return show_error("distance contrainte error ", "Les distances doivent être positives et d_max >d_min")
 
-            if not filePath:
-                show_error("Error", "No Excel file selected.")
-                return
-            d_user, loss_user = read_excel_data(filePath)
+            if show_points_cb.get():
+                if not filePath:
+                    return show_error("Excel Required", "Please select an Excel file to load experimental data.")
+                d_user, loss_user = read_excel_data(filePath)
+            else:
+                d_user, loss_user = [], []
             analyze_and_plot(f, h_tx, h_rx, slope_threshold, d_user, loss_user, d_min, d_max)
 
         except Exception as e:
             show_error("Error", str(e))
 
-    customtkinter.CTkButton(option2, text="Browse Excel", command=openFile, height=40, width=200,
-                            corner_radius=50).pack(pady=10)
-    customtkinter.CTkLabel(option2, text="Choose Excel from USB:", font=("Helvetica", 14)).pack(pady=5)
+    def checkboxverif():
+        if show_points_cb.get():
+            usb_combo.configure(state="normal")
+            sf.configure(state="normal")
+            be.configure(state="normal")
+            lfu.configure(state="normal")
+        else:
+            usb_combo.configure(state="disabled")
+            sf.configure(state="disabled")
+            be.configure(state="disabled")
+            lfu.configure(state="disabled")
 
+    check_var = customtkinter.BooleanVar(value=False)
+    show_points_cb = customtkinter.CTkCheckBox(option2, text="Show point cloud", variable=check_var, onvalue=True, offvalue=False, height=40, width=200, corner_radius=50)
+    show_points_cb.pack(pady=5)
+    show_points_cb.configure(command=checkboxverif)
+
+    be = customtkinter.CTkButton(option2, text="Browse Excel", command=openFile,state = "disabled", height=40, width=200,corner_radius=50)
+    be.pack(pady=5)
+    customtkinter.CTkLabel(option2, text="Choose Excel from USB:", font=("Helvetica", 14)).pack(pady=5)
     # ComboBox
     usb_combo = customtkinter.CTkComboBox(option2, values=[], width=400, height=40, corner_radius=50)
     usb_combo.pack(pady=5)
-    customtkinter.CTkButton(option2, text="Load from USB", command=load_from_usb, height=40, width=200,
-                            corner_radius=50).pack(pady=5)
-    customtkinter.CTkButton(option2, text="Use Selected USB File", command=use_selected_usb_file, height=40, width=200,
-                            corner_radius=50).pack(pady=5)
-    customtkinter.CTkButton(option2, text="Generate Plot", command=sumbitData, height=40, width=200,
-                            corner_radius=50).pack(pady=5)
-    customtkinter.CTkButton(option2, text="Clear", command=clearData, height=40, width=200, corner_radius=50).pack(
-        pady=5)
+    lfu = customtkinter.CTkButton(option2, text="Load from USB", command=load_from_usb, height=40, width=200,state = "disabled",corner_radius=50)
+    lfu.pack(pady=5)
+    sf = customtkinter.CTkButton(option2, text="Use Selected USB File", command=use_selected_usb_file,state = "disabled", height=40, width=200,corner_radius=50)
+    sf.pack(pady=5)
+    customtkinter.CTkButton(option2, text="Generate Plot", command=sumbitData, height=40, width=200,corner_radius=50).pack(pady=5)
+    customtkinter.CTkButton(option2, text="Clear", command=clearData, height=40, width=200, corner_radius=50).pack(pady=5)
 
 
 def click3():
@@ -478,7 +573,6 @@ def click3():
             x, y = state.axis_points[label]
             canvas.create_oval(x - 4, y - 4, x + 4, y + 4, fill="blue")
 
-
     def safe_eval(prompt):
         def on_submit():
             value = entry.get()
@@ -517,9 +611,9 @@ def click3():
         dialog.wait_window()
         return user_input.get() if user_input.get() != 0.0 else None
 
-
     def set_axis_limits():
-        messagebox.showinfo("Set Axis Points", "Click image in order: X Min, X Max, Y Min, Y Max\nRight click to undo.", parent=option3)
+        messagebox.showinfo("Set Axis Points", "Click image in order: X Min, X Max, Y Min, Y Max\nRight click to undo.",
+                            parent=option3)
         state.setting_axis = True
         state.axis_index = 0
         state.points.clear()
@@ -636,15 +730,13 @@ def click3():
         for k, v in state.axis_limits.items():
             ws2.append([k, v])
 
-        save_path = filedialog.asksaveasfilename(parent=option3, defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
+        save_path = filedialog.asksaveasfilename(parent=option3, defaultextension=".xlsx",
+                                                 filetypes=[("Excel files", "*.xlsx")])
         if save_path:
             wb.save(save_path)
-            messagebox.showinfo("Saved", f" Data saved to {save_path}" , parent=option3)
+            messagebox.showinfo("Saved", f" Data saved to {save_path}", parent=option3)
         else:
             show_error("Cancelled", "Save operation cancelled.")
-
-
-
 
     # GUI setup
     canvas = tk.Canvas(option3, cursor="cross")
@@ -655,17 +747,23 @@ def click3():
     upload_btn = customtkinter.CTkButton(option3, text="Upload Image", command=upload_image, height=40, width=200,
                                          font=("Helvetica", 24), hover_color="green", corner_radius=50)
     upload_btn.pack(pady=20, ipadx=20)
-    set_axis_btn = customtkinter.CTkButton(option3, text="set axis limit", command=set_axis_limits, height=40, width=200,
-                                           font=("Helvetica", 24), hover_color="green", corner_radius=50, state="disabled")
+    set_axis_btn = customtkinter.CTkButton(option3, text="set axis limit", command=set_axis_limits, height=40,
+                                           width=200,
+                                           font=("Helvetica", 24), hover_color="green", corner_radius=50,
+                                           state="disabled")
     set_axis_btn.pack(pady=20, ipadx=20)
     save_btn = customtkinter.CTkButton(option3, text="save to excel", command=save_to_excel, height=40, width=200,
                                        font=("Helvetica", 24), hover_color="green", corner_radius=50, state="disabled")
     save_btn.pack(pady=20, ipadx=20)
-    clear_last_btn = customtkinter.CTkButton(option3, text="clear last point ", command=clear_last_point, height=40, width=200,
-                                             font=("Helvetica", 24), hover_color="green", corner_radius=50, state="disabled")
+    clear_last_btn = customtkinter.CTkButton(option3, text="clear last point ", command=clear_last_point, height=40,
+                                             width=200,
+                                             font=("Helvetica", 24), hover_color="green", corner_radius=50,
+                                             state="disabled")
     clear_last_btn.pack(pady=20, ipadx=20)
-    clear_all_btn = customtkinter.CTkButton(option3, text="clear all points", command=clear_all_points, height=40, width=200,
-                                            font=("Helvetica", 24), hover_color="green", corner_radius=50, state="disabled")
+    clear_all_btn = customtkinter.CTkButton(option3, text="clear all points", command=clear_all_points, height=40,
+                                            width=200,
+                                            font=("Helvetica", 24), hover_color="green", corner_radius=50,
+                                            state="disabled")
     clear_all_btn.pack(pady=20, ipadx=20)
 
 
@@ -681,7 +779,8 @@ def center_window(window):
     y = (screen_height - height) // 2
 
     window.geometry(f"{width}x{height}+{x}+{y}")
-    
+
+
 def center_window1(window, width, height):
     ##center the main window
     screen_width = window.winfo_screenwidth()
