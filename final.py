@@ -436,14 +436,30 @@ def click3():
     def upload_image():
         state.image_path = filedialog.askopenfilename(parent=option3, title="Select Image",
                                                       filetypes=[("Image Files", "*.png *.jpg *.jpeg")])
+
         if state.image_path:
-            state.image = cv2.imread(state.image_path)
-            state.image = cv2.cvtColor(state.image, cv2.COLOR_BGR2RGB)
+            # Read and convert color (OpenCV loads in BGR by default)
+            image = cv2.imread(state.image_path)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+            # Resize image to fit display area (e.g., max 600x400)
+            max_width, max_height = 600, 400
+            height, width = image.shape[:2]
+            scale = min(max_width / width, max_height / height, 1.0)  # Keep scale ≤ 1
+
+            if scale < 1.0:
+                new_width = int(width * scale)
+                new_height = int(height * scale)
+                image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+
+            state.image = image
             state.points.clear()
             state.axis_points.clear()
             state.axis_index = 0
             state.setting_axis = False
+
             display_image()
+
             set_axis_btn.configure(state="normal")
             save_btn.configure(state="normal")
             clear_last_btn.configure(state="normal")
