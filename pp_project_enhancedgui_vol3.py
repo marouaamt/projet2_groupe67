@@ -616,7 +616,7 @@ def click3():
         save_path = filedialog.asksaveasfilename(parent=option3, defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
         if save_path:
             wb.save(save_path)
-            messagebox.showinfo("Saved", f" Data saved to {save_path}")
+            messagebox.showinfo("Saved", f" Data saved to {save_path}" , parent=option3)
         else:
             show_error("Cancelled", "Save operation cancelled.")
 

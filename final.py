@@ -47,7 +47,7 @@ def find_xlsx_files_in_usb():
 def click1():
     new_window = customtkinter.CTkToplevel()
     new_window.attributes('-topmost', 1)
-    new_window.geometry("700x700")
+    new_window.geometry("500x600")
     new_window.title('OKUMURA-HATA MODEL GRAPH PLOTTING')
     new_window.resizable(False, False)
     center_window(new_window)
@@ -194,33 +194,33 @@ def show_error(title, message, type="error"):
 def click2():
     option2 = customtkinter.CTkToplevel()
     option2.attributes('-topmost', 1)
-    option2.geometry("800x700")
+    option2.geometry("500x650")
     option2.resizable(False, False)
     option2.title("the three slope model and the cloud piont ")
     center_window(option2)
     filePath = None
     usb_file_paths = []
     customtkinter.CTkLabel(option2, text="The three slope model and the cloud piont ",
-                           font=("Helvetica", 20, "bold"), ).pack(pady=10)
+                           font=("Helvetica", 20, "bold"), ).pack(pady=5)
 
     # Input fields
     freq = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50,
                                   placeholder_text="enter frequency in (MHz)")
-    freq.pack(pady=15)
+    freq.pack(pady=5)
     Txheight = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50,
                                       placeholder_text="enter transmitter height in (m)")
-    Txheight.pack(pady=15)
+    Txheight.pack(pady=5)
     Rxheight = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50,
                                       placeholder_text="enter receiver height in (m)")
-    Rxheight.pack(pady=15)
+    Rxheight.pack(pady=5)
     salop = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50, placeholder_text="enter salop (n) ")
-    salop.pack(pady=15)
+    salop.pack(pady=5)
     customtkinter.CTkLabel(option2, text=" enter the distance range in (km) ", font=("Helvetica", 14, "bold"), ).pack(
         pady=5)
     MinDistance = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50, placeholder_text="from ")
-    MinDistance.pack(pady=10)
+    MinDistance.pack(pady=5)
     MaxDistance = customtkinter.CTkEntry(option2, height=50, width=300, corner_radius=50, placeholder_text="to ")
-    MaxDistance.pack(pady=10)
+    MaxDistance.pack(pady=5)
 
     def clearData():
         freq.delete(0, tk.END)
@@ -389,27 +389,27 @@ def click2():
             show_error("Error", str(e))
 
     customtkinter.CTkButton(option2, text="Browse Excel", command=openFile, height=40, width=200,
-                            corner_radius=50).pack(pady=15)
+                            corner_radius=50).pack(pady=10)
     customtkinter.CTkLabel(option2, text="Choose Excel from USB:", font=("Helvetica", 14)).pack(pady=5)
 
     # ComboBox
     usb_combo = customtkinter.CTkComboBox(option2, values=[], width=400, height=40, corner_radius=50)
-    usb_combo.pack(pady=15)
+    usb_combo.pack(pady=5)
     customtkinter.CTkButton(option2, text="Load from USB", command=load_from_usb, height=40, width=200,
-                            corner_radius=50).pack(pady=15)
+                            corner_radius=50).pack(pady=5)
     customtkinter.CTkButton(option2, text="Use Selected USB File", command=use_selected_usb_file, height=40, width=200,
-                            corner_radius=50).pack(pady=15)
+                            corner_radius=50).pack(pady=5)
     customtkinter.CTkButton(option2, text="Generate Plot", command=sumbitData, height=40, width=200,
-                            corner_radius=50).pack(pady=15)
+                            corner_radius=50).pack(pady=5)
     customtkinter.CTkButton(option2, text="Clear", command=clearData, height=40, width=200, corner_radius=50).pack(
-        pady=15)
+        pady=5)
 
 
 def click3():
     ################### same balako touchiwha ##################
     option3 = customtkinter.CTkToplevel()
     option3.title("Manual Point Selector (No Class Version)")
-    option3.geometry("1000x1000")
+    option3.geometry("700x700")
     option3.attributes('-topmost', 1)
 
     global set_axis_btn, save_btn, clear_last_btn, clear_all_btn
@@ -475,7 +475,7 @@ def click3():
 
         dialog = customtkinter.CTkToplevel(option3)
         dialog.title("Enter Axis Value")
-        dialog.geometry("600x300")
+        dialog.geometry("400x200")
         dialog.resizable(False, False)
         dialog.attributes('-topmost', 1)
         dialog.grab_set()  # modal
@@ -618,7 +618,7 @@ def click3():
         save_path = filedialog.asksaveasfilename(parent=option3, defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
         if save_path:
             wb.save(save_path)
-            show_error("Saved", f"Data saved to {save_path}")
+            messagebox.showinfo("Saved", f" Data saved to {save_path}" , parent=option3)
         else:
             show_error("Cancelled", "Save operation cancelled.")
 
@@ -674,7 +674,7 @@ def center_window(window):
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("blue")
 window = customtkinter.CTk()
-window.geometry("1400x800")
+window.geometry("900x800")
 window.title("projet pluridisciplinaire")
 window.configure(bg="#f0f4f8")
 
