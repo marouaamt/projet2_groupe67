@@ -255,7 +255,7 @@ def click2():
             show_error("Error", "No file selected from USB.")
             return
         try:
-            idx = usb_combo.cget("values").index(selected_value)
+            idx= [os.path.basename(path) for path in usb_file_paths].index(selected_value)
             filePath = usb_file_paths[idx]
             show_error("Selected", f"Using file: {filePath}")
         except ValueError:
