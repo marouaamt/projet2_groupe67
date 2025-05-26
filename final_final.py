@@ -143,53 +143,6 @@ def click1():
             ys_suburban.append(l_suburban)
 
         return xs, ys_medium, ys_dense, ys_open, ys_suburban
-    def openFile():
-        nonlocal filePath
-        filePath = filedialog.askopenfilename(
-            parent=new_window,
-            title="Sélectionner un fichier Excel",
-            filetypes=[("Excel files", "*.xlsx")])
-    def load_from_usb():
-        nonlocal usb_file_paths
-        xlsx_files, file_paths = find_xlsx_files_in_usb()
-        if not xlsx_files:
-            show_error("No Files", "No EXCEL files in this USB or USB not connected.")
-            return
-        usb_file_paths = file_paths
-        usb_combo.configure(values=xlsx_files)
-        usb_combo.set(xlsx_files[0])
-        show_error("Loaded", "USB Excel files loaded.")
-    def read_excel_data(file_name):
-        ext = os.path.splitext(file_name)[1].lower()
-
-        try:
-            if ext == ".xlsx":
-                df = pd.read_excel(file_name, engine="openpyxl")
-            elif ext == ".xls":
-                df = pd.read_excel(file_name, engine="xlrd")
-            else:
-                raise show_error("error", "Unsupported file type. Please select a .xls or .xlsx file.")
-        except Exception as e:
-            raise show_error("error", f"Failed to read Excel file: {str(e)}")
-
-        if df.shape[1] < 2:
-            return show_error("error", "The Excel file must contain at least two columns.")
-
-        distances = df.iloc[:, 0].values
-        losses = df.iloc[:, 1].values
-        return distances, losses
-    def use_selected_usb_file():
-        nonlocal filePath
-        selected_value = usb_combo.get()
-        if not selected_value:
-            show_error("Error", "No file selected from USB.")
-            return
-        try:
-            idx = [os.path.basename(path) for path in usb_file_paths].index(selected_value)
-            filePath = usb_file_paths[idx]
-            show_error("Selected", f"Using file: {filePath}")
-        except ValueError:
-            show_error("Error", "Selected file not found in USB paths.")
     def plot_all_curves():
         result = compute_curves()
         if result is None:
@@ -209,42 +162,10 @@ def click1():
         plt.grid(True, which="both", linestyle='--', linewidth=0.5)
         plt.tight_layout()
         def choiceofpc ():
-            if show_points_cb.get():
-                d_user, loss_user = read_excel_data(filePath)
-                plt.scatter(d_user, loss_user, color='red', zorder=5, label='Experimental Data')
-                plt.show()
-            else:
                 plt.show()
         choiceofpc()
 
-
-    def checkboxverif():
-        if show_points_cb.get():
-            usb_combo.configure(state="normal")
-            sf.configure(state="normal")
-            be.configure(state="normal")
-            lfu.configure(state="normal")
-        else:
-            usb_combo.configure(state="disabled")
-            sf.configure(state="disabled")
-            be.configure(state="disabled")
-            lfu.configure(state="disabled")
-
-    check_var = customtkinter.BooleanVar(value=False)
-    show_points_cb = customtkinter.CTkCheckBox(new_window, text="Show point cloud", variable=check_var, onvalue=True,offvalue=False, height=30, width=200, corner_radius=50)
-    show_points_cb.pack(pady=7)
-    show_points_cb.configure(command=checkboxverif)
-
-    be = customtkinter.CTkButton(new_window, text="Browse Excel", command=openFile, state="disabled", height=40, width=200, corner_radius=50)
-    be.pack(pady=7)
-    customtkinter.CTkLabel(new_window, text="Choose Excel from USB:", font=("Helvetica", 14)).pack(pady=7)
-    # ComboBox
-    usb_combo = customtkinter.CTkComboBox(new_window, values=[], width=300, height=30, corner_radius=50)
-    usb_combo.pack(pady=7)
-    lfu = customtkinter.CTkButton(new_window, text="Load from USB", command=load_from_usb, height=30, width=200, state="disabled", corner_radius=50)
-    lfu.pack(pady=7)
-    sf = customtkinter.CTkButton(new_window, text="Use Selected USB File", command=use_selected_usb_file, state="disabled", height=40, width=200, corner_radius=50)
-    sf.pack(pady=7)
+    
     customtkinter.CTkButton(new_window, text="Generate Plot", command=plot_all_curves, height=30, width=200, corner_radius=50).pack(pady=7)
     customtkinter.CTkButton(new_window, text="Clear", command=clearData, height=30, width=200, corner_radius=50).pack(pady=7)
 
@@ -275,23 +196,21 @@ def click2():
     center_window1(option2, 500, 850)
     option2.title("the three slope model and the cloud point")
 
-
     filePath = None
     usb_file_paths = []
     customtkinter.CTkLabel(option2, text="The three slope model and the cloud point",
                            font=("Helvetica", 20, "bold"), ).pack(pady=5)
 
-    # Input fields
     customtkinter.CTkLabel(option2, text="frequency", font=("Helvetica", 14, "bold"), ).pack(pady=2)
-    freq = customtkinter.CTkEntry(option2, height=40, width=200, corner_radius=50,placeholder_text="enter frequency in (MHz)")
+    freq = customtkinter.CTkEntry(option2, height=40, width=200, corner_radius=50, placeholder_text="enter frequency in (MHz)")
     freq.pack(pady=2)
     customtkinter.CTkLabel(option2, text="Tx height", font=("Helvetica", 14, "bold"), ).pack(pady=2)
-    Txheight = customtkinter.CTkEntry(option2, height=40, width=200, corner_radius=50,placeholder_text="enter transmitter height in (m)")
+    Txheight = customtkinter.CTkEntry(option2, height=40, width=200, corner_radius=50, placeholder_text="enter transmitter height in (m)")
     Txheight.pack(pady=2)
-    customtkinter.CTkLabel(option2 , text="Rx height", font=("Helvetica", 14, "bold"), ).pack(pady=2)
+    customtkinter.CTkLabel(option2, text="Rx height", font=("Helvetica", 14, "bold"), ).pack(pady=2)
     Rxheight = customtkinter.CTkEntry(option2, height=40, width=200, corner_radius=50, placeholder_text="enter receiver height in (m)")
     Rxheight.pack(pady=2)
-    customtkinter.CTkLabel(option2 , text="Salop", font=("Helvetica", 14, "bold"), ).pack(pady=2)
+    customtkinter.CTkLabel(option2, text="Salop", font=("Helvetica", 14, "bold"), ).pack(pady=2)
     salop = customtkinter.CTkEntry(option2, height=40, width=200, corner_radius=50, placeholder_text="enter salop (n) ")
     salop.pack(pady=2)
     customtkinter.CTkLabel(option2, text=" enter the distance range in (km) ", font=("Helvetica", 14, "bold"), ).pack(pady=2)
@@ -314,30 +233,6 @@ def click2():
             parent=option2,
             title="Sélectionner un fichier Excel",
             filetypes=[("Excel files", "*.xlsx")])
-
-    def load_from_usb():
-        nonlocal usb_file_paths
-        xlsx_files, file_paths = find_xlsx_files_in_usb()
-        if not xlsx_files:
-            show_error("No Files", "No EXCEL files in this USB or USB not connected.")
-            return
-        usb_file_paths = file_paths
-        usb_combo.configure(values=xlsx_files)
-        usb_combo.set(xlsx_files[0])
-        show_error("Loaded", "USB Excel files loaded.")
-
-    def use_selected_usb_file():
-        nonlocal filePath
-        selected_value = usb_combo.get()
-        if not selected_value:
-            show_error("Error", "No file selected from USB.")
-            return
-        try:
-            idx = [os.path.basename(path) for path in usb_file_paths].index(selected_value)
-            filePath = usb_file_paths[idx]
-            show_error("Selected", f"Using file: {filePath}")
-        except ValueError:
-            show_error("Error", "Selected file not found in USB paths.")
 
     def read_excel_data(file_name):
         ext = os.path.splitext(file_name)[1].lower()
@@ -385,128 +280,84 @@ def click2():
         if p > 0.5: return "Open Environment"
         return "Large City / Rural"
 
-    def analyze_and_plot(f, h_tx, h_rx, slope_threshold, d_user, loss_user, d_min, d_max):
-        d_plot = np.logspace(np.log10(d_min), np.log10(d_max), 500)
+    def analyze_and_plot(f, h_tx, h_rx, slope_threshold, d_user, loss_user):
         k = compute_k(f)
         a = compute_a(h_tx, h_rx)
         d1, d2 = compute_thresholds(h_tx, h_rx)
-        lp_model = Lp(d_plot, k, a, d1, d2)
-        segments, envs, start_idx = [], [], 0
+        lp_model = Lp(d_user, k, a, d1, d2)
+        slopes = np.gradient(lp_model, d_user)
 
-        for i in range(1, len(d_plot) - 1):
-            denominator = (d_plot[i + 1] - d_plot[i - 1])
-            if denominator != 0:  # Éviter la division par zéro
-                slope = abs((lp_model[i + 1] - lp_model[i - 1]) / denominator)
-            else:
-                slope = 0  # ou une autre valeur par défaut appropriée
+        segments, envs, start_idx = [], [], 0
+        for i in range(1, len(d_user) - 1):
+            slope = abs(slopes[i])
             env = detect_env(slope)
             if slope > slope_threshold and (len(envs) == 0 or env != envs[-1]):
                 segments.append((start_idx, i))
                 envs.append(env)
                 start_idx = i
 
-        segments.append((start_idx, len(d_plot) - 1))
+        segments.append((start_idx, len(d_user) - 1))
         envs.append(envs[-1] if envs else "Large City / Rural")
 
         plt.figure(figsize=(12, 6))
         colors = ['blue', 'green', 'orange', 'purple', 'magenta', 'brown']
         for i, (s, e) in enumerate(segments):
-            plt.plot(d_plot[s:e], lp_model[s:e], color=colors[i % len(colors)], label=f"{envs[i]} ({s}-{e})")
+            plt.plot(d_user[s:e], lp_model[s:e], color=colors[i % len(colors)], label=f"{envs[i]} ({s}-{e})")
+
+        if len(loss_user) > 0:
+            plt.scatter(d_user, loss_user, color='red', label='Experimental Data')
+
         plt.xscale('log')
         plt.xlabel("Distance (km)")
         plt.ylabel("Path Loss (dB)")
-        plt.ylabel("Path Loss (dB)")
-        plt.gca().invert_yaxis()  # ← ici on inverse l'axe Y
-        plt.title("Dynamic Multi-slope Model")
-
+        plt.gca().invert_yaxis()
         plt.title("Dynamic Multi-slope Model")
         plt.grid(True, which="both", linestyle='--', linewidth=0.5)
         plt.legend()
         formula = r"$L_p(d) = k + 10 \log_{10}\left(\frac{d^2}{1 + S_1(d) + S_2(d)}\right)$"
         plt.text(0.5, 0.95, formula, transform=plt.gca().transAxes,
                  fontsize=12, verticalalignment='top', bbox=dict(facecolor='white', alpha=0.8))
+        if len(loss_user) > 0:
+            lp_interp = np.interp(d_user, d_user, lp_model)
+            mse = np.mean((loss_user - lp_interp) ** 2)
+            plt.text(0.5, 0.88, f"MSE: {mse:.2f} dB²", transform=plt.gca().transAxes,
+                     fontsize=12, verticalalignment='top', color='red', bbox=dict(facecolor='white', alpha=0.8))
 
-        # Interpolation du modèle aux points expérimentaux
-        lp_interp = np.interp(d_user, d_plot, lp_model)
-
-        # Calcul du MSE
-        mse = np.mean((loss_user - lp_interp) ** 2)
-
-        # Affichage de la MSE dans le graphique
-        mse_text = f"MSE: {mse:.2f} dB²"
-        plt.text(0.5, 0.88, mse_text, transform=plt.gca().transAxes, fontsize=12, verticalalignment='top', color='red',
-                 bbox=dict(facecolor='white', alpha=0.8))
-        plt.text(0.5, 0.88, f"MSE: {mse:.2f} dB²", transform=plt.gca().transAxes, fontsize=12, verticalalignment='top',
-                 color='red', bbox=dict(facecolor='white', alpha=0.8))
         plt.tight_layout()
         plt.show()
-        def choiceofpc ():
-            if show_points_cb.get():
-                plt.scatter(d_user, loss_user, color='red', zorder=5, label='Experimental Data')
-                plt.show()
-            else:
-                plt.show()
-
-        choiceofpc()
 
     def sumbitData():
         try:
             f = float(freq.get())
             h_tx = float(Txheight.get())
             h_rx = float(Rxheight.get())
-            d_min = float(MinDistance.get())
-            d_max = float(MaxDistance.get())
             slope_threshold = float(salop.get())
             if f <= 0:
-                return show_error("frenquency error", "La fréquence doit être strictement positive")
-            if not (10 <= h_tx <= 200):
-                return show_error("transmitter heigh erro", "La hauteur Tx doit être entre 10m et 200m")
-            if not (1 <= h_rx <= 10):
-                return show_error("receiver heigh error ", "La hauteur Rx doit être entre 1m et 10m")
-            if d_min <= 0 or d_max <= d_min:
-                return show_error("distance contrainte error ", "Les distances doivent être positives et d_max >d_min")
-
-            if show_points_cb.get():
-                if not filePath:
-                    return show_error("Excel Required", "Please select an Excel file to load experimental data.")
-                d_user, loss_user = read_excel_data(filePath)
-            else:
-                d_user, loss_user = [], []
-            analyze_and_plot(f, h_tx, h_rx, slope_threshold, d_user, loss_user, d_min, d_max)
+                return show_error("frequency error", "La fréquence doit être strictement positive")
+            if not ( h_tx >= 0):
+                return show_error("transmitter height error")
+            if not ( h_rx >= 0):
+                return show_error("receiver height error")
+            if not filePath:
+                return show_error("Excel Required", "Please select an Excel file to load experimental data.")
+            d_user, loss_user = read_excel_data(filePath)
+            analyze_and_plot(f, h_tx, h_rx, slope_threshold, d_user, loss_user)
 
         except Exception as e:
             show_error("Error", str(e))
 
-    def checkboxverif():
-        if show_points_cb.get():
-            usb_combo.configure(state="normal")
-            sf.configure(state="normal")
-            be.configure(state="normal")
-            lfu.configure(state="normal")
-        else:
-            usb_combo.configure(state="disabled")
-            sf.configure(state="disabled")
-            be.configure(state="disabled")
-            lfu.configure(state="disabled")
 
-    check_var = customtkinter.BooleanVar(value=False)
-    show_points_cb = customtkinter.CTkCheckBox(option2, text="Show point cloud", variable=check_var, onvalue=True, offvalue=False, height=40, width=200, corner_radius=50)
-    show_points_cb.pack(pady=5)
-    show_points_cb.configure(command=checkboxverif)
-
-    be = customtkinter.CTkButton(option2, text="Browse Excel", command=openFile,state = "disabled", height=40, width=200,corner_radius=50)
+    be = customtkinter.CTkButton(option2, text="Browse Excel", command=openFile, height=40, width=200, corner_radius=50)
     be.pack(pady=2)
     customtkinter.CTkLabel(option2, text="Choose Excel from USB:", font=("Helvetica", 14)).pack(pady=2)
-    # ComboBox
     usb_combo = customtkinter.CTkComboBox(option2, values=[], width=250, height=40, corner_radius=50)
     usb_combo.pack(pady=4)
-    lfu = customtkinter.CTkButton(option2, text="Load from USB", command=load_from_usb, height=40, width=200,state = "disabled",corner_radius=50)
+    lfu = customtkinter.CTkButton(option2, text="Load from USB", command=lambda: None, height=40, width=200, corner_radius=50)
     lfu.pack(pady=2)
-    sf = customtkinter.CTkButton(option2, text="Use Selected USB File", command=use_selected_usb_file,state = "disabled", height=40, width=200,corner_radius=50)
+    sf = customtkinter.CTkButton(option2, text="Use Selected USB File", command=lambda: None, height=40, width=200, corner_radius=50)
     sf.pack(pady=2)
-    customtkinter.CTkButton(option2, text="Generate Plot", command=sumbitData, height=40, width=200,corner_radius=50).pack(pady=2)
+    customtkinter.CTkButton(option2, text="Generate Plot", command=sumbitData, height=40, width=200, corner_radius=50).pack(pady=2)
     customtkinter.CTkButton(option2, text="Clear", command=clearData, height=40, width=200, corner_radius=50).pack(pady=2)
-
 
 def click3():
     ################### same balako touchiwha ##################
@@ -775,356 +626,6 @@ def click3():
                                             state="disabled")
     clear_all_btn.pack(pady=4, ipadx=20)
 
-def click4 () :
-    option4 = customtkinter.CTkToplevel()
-    option4.attributes('-topmost', 1)
-    option4.geometry("500x850")
-    option4.title("the three slope model and the cloud piont")
-    center_window1(option4 , 500, 850)
-
-    filePath = None
-    usb_file_paths = []
-    customtkinter.CTkLabel(option4, text="The three slope model and the cloud piont",
-                           font=("Helvetica", 20, "bold"), ).pack(pady=5)
-
-    # Input 
-    customtkinter.CTkLabel(option4, text="frequency", font=("Helvetica", 14, "bold"), ).pack(pady=2)
-    freq = customtkinter.CTkEntry(option4, height=40, width=200, corner_radius=50,placeholder_text="enter frequency in (MHz)")
-    freq.pack(pady=2)
-    customtkinter.CTkLabel(option4, text="Tx height", font=("Helvetica", 14, "bold"), ).pack(pady=2)
-    Txheight = customtkinter.CTkEntry(option4, height=40, width=200, corner_radius=50,placeholder_text="enter transmitter height in (m)")
-    Txheight.pack(pady=2)
-    customtkinter.CTkLabel(option4 , text="Rx height", font=("Helvetica", 14, "bold"), ).pack(pady=2)
-    Rxheight = customtkinter.CTkEntry(option4, height=40, width=200, corner_radius=50, placeholder_text="enter receiver height in (m)")
-    Rxheight.pack(pady=2)
-    customtkinter.CTkLabel(option4 , text="Salop", font=("Helvetica", 14, "bold"), ).pack(pady=2)
-    salop = customtkinter.CTkEntry(option4, height=40, width=200, corner_radius=50, placeholder_text="enter salop (n) ")
-    salop.pack(pady=2)
-    customtkinter.CTkLabel(option4, text=" enter the distance range in (km) ", font=("Helvetica", 14, "bold"), ).pack(pady=2)
-    MinDistance = customtkinter.CTkEntry(option4, height=40, width=200, corner_radius=50, placeholder_text="from ")
-    MinDistance.pack(pady=2)
-    MaxDistance = customtkinter.CTkEntry(option4, height=40, width=200, corner_radius=50, placeholder_text="to ")
-    MaxDistance.pack(pady=2)
-
-    def clearData():
-        freq.delete(0, tk.END)
-        Txheight.delete(0, tk.END)
-        Rxheight.delete(0, tk.END)
-        salop.delete(0, tk.END)
-        MinDistance.delete(0, tk.END)
-        MaxDistance.delete(0, tk.END)
-
-    def openFile():
-        nonlocal filePath
-        filePath = filedialog.askopenfilename(
-            parent=option4,
-            title="Sélectionner un fichier Excel",
-            filetypes=[("Excel files", "*.xlsx")])
-
-    def load_from_usb():
-        nonlocal usb_file_paths
-        xlsx_files, file_paths = find_xlsx_files_in_usb()
-        if not xlsx_files:
-            show_error("No Files", "No EXCEL files in this USB or USB not connected.")
-            return
-        usb_file_paths = file_paths
-        usb_combo.configure(values=xlsx_files)
-        usb_combo.set(xlsx_files[0])
-        show_error("Loaded", "USB Excel files loaded.")
-
-    def use_selected_usb_file():
-        nonlocal filePath
-        selected_value = usb_combo.get()
-        if not selected_value:
-            show_error("Error", "No file selected from USB.")
-            return
-        try:
-            idx = [os.path.basename(path) for path in usb_file_paths].index(selected_value)
-            filePath = usb_file_paths[idx]
-            show_error("Selected", f"Using file: {filePath}")
-        except ValueError:
-            show_error("Error", "Selected file not found in USB paths.")
-
-    def a_medium(hm, f):
-        return (1.1 * math.log10(f) - 0.7) * hm - (1.56 * math.log10(f) - 0.8)
-
-    def a_dense(hm, f):
-        if f <= 200:
-            return 8.29 * (math.log10(1.54 * hm)) ** 2 - 1.1
-        elif f >= 400:
-            return 3.2 * (math.log10(11.75 * hm)) ** 2 - 4.97
-        else:
-            # Interpolation linéaire entre 200 et 400 MHz
-            a200 = 8.29 * (math.log10(1.54 * hm)) ** 2 - 1.1
-            a400 = 3.2 * (math.log10(11.75 * hm)) ** 2 - 4.97
-            return a200 + (a400 - a200) * ((f - 200) / 200)
-
-    def compute_curves():
-        try:
-            frequency = float(freq.get())
-            hb = float(Txheight.get())
-            hm = float(Rxheight.get())
-            distance = float(MaxDistance.get())
-
-            if not (150 <= frequency <= 1500):
-                show_error("frenquency error", "Enter frequency (in MHz) where 150 <= frequency <= 1500")
-                return
-            if not (30 <= hb <= 200):
-                show_error("transmitter high  error", "Enter Tx height (30 <= hb <= 200 m)")
-                return
-            if not (1 <= hm <= 10):
-                show_error("receiver high  error", "Enter Rx height (1 <= hm <= 10 m)")
-                return
-            if not (1 <= distance ):
-                show_error("distance error", "Enter distance (1 <= distance <= 20 km)")
-                return
-
-        except ValueError:
-            show_error("value error", "Invalid value. Please enter numbers only.")
-            return
-
-        step = 1
-        xs = np.arange(step, distance + step, step)
-        ys_medium, ys_dense, ys_open, ys_suburban = [], [], [], []
-
-        for d in xs:
-            # Medium city
-            a_m = a_medium(hm, frequency)
-            l_medium = 69.55 + 26.16 * math.log10(frequency) - 13.82 * math.log10(hb) - a_m + \
-                       (44.9 - 6.55 * math.log10(hb)) * math.log10(d)
-            ys_medium.append(l_medium)
-
-            # Dense urban
-            a_d = a_dense(hm, frequency)
-            l_dense = 69.55 + 26.16 * math.log10(frequency) - 13.82 * math.log10(hb) - a_d + \
-                      (44.9 - 6.55 * math.log10(hb)) * math.log10(d)
-            ys_dense.append(l_dense)
-
-            # Open area
-            lopen = l_medium - 4.78 * (math.log10(frequency)) ** 2 + 18.33 * math.log10(frequency) - 40.94
-            ys_open.append(lopen)
-
-            # Suburban
-            l_suburban = l_medium - 2 * (math.log10(frequency / 28)) ** 2 - 5.4
-            ys_suburban.append(l_suburban)
-
-        return xs, ys_medium, ys_dense, ys_open, ys_suburban
-    def read_excel_data(file_name):
-        ext = os.path.splitext(file_name)[1].lower()
-
-        try:
-            if ext == ".xlsx":
-                df = pd.read_excel(file_name, engine="openpyxl")
-            elif ext == ".xls":
-                df = pd.read_excel(file_name, engine="xlrd")
-            else:
-                raise show_error("error", "Unsupported file type. Please select a .xls or .xlsx file.")
-        except Exception as e:
-            raise show_error("error", f"Failed to read Excel file: {str(e)}")
-
-        if df.shape[1] < 2:
-            return show_error("error", "The Excel file must contain at least two columns.")
-
-        distances = df.iloc[:, 0].values
-        losses = df.iloc[:, 1].values
-        return distances, losses
-
-    def compute_k(f_mhz):
-        c = 3e8
-        return 20 * np.log10((4 * np.pi * f_mhz * 1e6) / c)
-
-    def compute_thresholds(h_tx, h_rx):
-        return 3 + 0.02 * h_tx, 8 + 0.1 * h_rx
-
-    def compute_a(h_tx, h_rx):
-        return 5 + (h_tx + h_rx) / 60
-
-    def S1(d, a, d1):
-        return 1 / (1 + np.exp(-a * (d - d1)))
-
-    def S2(d, a, d2):
-        return 1 / (1 + np.exp(-a * (d - d2)))
-
-    def Lp(d, k, a, d1, d2):
-        return k + 10 * np.log10((d ** 2) / (1 + S1(d, a, d1) + S2(d, a, d2)))
-
-    def detect_env(p):
-        if p > 5: return "Urban Area"
-        if p > 3: return "Small City"
-        if p > 1.5: return "Suburban"
-        if p > 0.5: return "Open Environment"
-        return "Large City / Rural"
-
-    def analyze_and_plot(f, h_tx, h_rx, slope_threshold, d_user, loss_user, d_min, d_max):
-        plt.figure(figsize=(14, 8))
-        plt.gca().invert_yaxis()
-        plt.grid(True, linestyle='--')
-        plt.xlabel("Distance (km) [log scale]")
-        plt.ylabel("Path Loss (dB)")
-        plt.title("Combined Path Loss Models")
-
-        result = compute_curves()
-        if result is None:
-            return
-        xs, ys_medium, ys_dense, ys_open, ys_suburban = result
-        d_plot = np.logspace(np.log10(d_min), np.log10(d_max), 500)
-        k = compute_k(f)
-        a = compute_a(h_tx, h_rx)
-        d1, d2 = compute_thresholds(h_tx, h_rx)
-        lp_model = Lp(d_plot, k, a, d1, d2)
-        segments, envs, start_idx = [], [], 0
-
-        for i in range(1, len(d_plot) - 1):
-            denominator = (d_plot[i + 1] - d_plot[i - 1])
-            if denominator != 0:  # Éviter la division par zéro
-                slope = abs((lp_model[i + 1] - lp_model[i - 1]) / denominator)
-            else:
-                slope = 0  # ou une autre valeur par défaut appropriée
-            env = detect_env(slope)
-            if slope > slope_threshold and (len(envs) == 0 or env != envs[-1]):
-                segments.append((start_idx, i))
-                envs.append(env)
-                start_idx = i
-
-        segments.append((start_idx, len(d_plot) - 1))
-        envs.append(envs[-1] if envs else "Large City / Rural")
-        colors = ['blue', 'green', 'orange', 'purple', 'magenta', 'brown']
-        for i, (s, e) in enumerate(segments):
-            plt.plot(d_plot[s:e], lp_model[s:e], color=colors[i % len(colors)], label=f"{envs[i]} ({s}-{e})")
-        plt.xscale('log')
-        plt.xlabel("Distance (km)")
-        plt.ylabel("Path Loss (dB)")
-        plt.ylabel("Path Loss (dB)")
-        plt.gca().invert_yaxis()  # ← ici on inverse l'axe Y
-        plt.title("Dynamic Multi-slope Model")
-
-        plt.title("Dynamic Multi-slope Model")
-        plt.grid(True, which="both", linestyle='--', linewidth=0.5)
-        plt.legend()
-        formula = r"$L_p(d) = k + 10 \log_{10}\left(\frac{d^2}{1 + S_1(d) + S_2(d)}\right)$"
-        plt.text(0.5, 0.95, formula, transform=plt.gca().transAxes,
-                 fontsize=12, verticalalignment='top', bbox=dict(facecolor='white', alpha=0.8))
-
-        # Interpolation du modèle aux points expérimentaux
-        lp_interp = np.interp(d_user, d_plot, lp_model)
-
-        # Calcul du MSE
-        mse = np.mean((loss_user - lp_interp) ** 2)
-
-        # Affichage de la MSE dans le graphique
-        mse_text = f"MSE: {mse:.2f} dB²"
-        plt.text(0.5, 0.88, mse_text, transform=plt.gca().transAxes, fontsize=12, verticalalignment='top', color='red',
-                 bbox=dict(facecolor='white', alpha=0.8))
-        plt.text(0.5, 0.88, f"MSE: {mse:.2f} dB²", transform=plt.gca().transAxes, fontsize=12, verticalalignment='top',
-                 color='red', bbox=dict(facecolor='white', alpha=0.8))
-        plt.tight_layout()
-
-        def choiceofpc(d_user, loss_user):
-            plt.gca().invert_yaxis()
-            if show_points_cb.get() and len(d_user) > 0 and len(loss_user) > 0:
-                plt.xlabel("Distance (km) [log scale]")
-                plt.ylabel("Path Loss (dB)")
-
-                if 20 >= float(MaxDistance.get()) >= 1:
-                    plt.semilogx(xs, ys_medium, linestyle='--', color='green', label="Urban (Medium city)")
-                    plt.semilogx(xs, ys_dense, linestyle='-.', color='blue', label="Urban (Dense/Large city)")
-                    plt.scatter(d_user, loss_user, color='red', zorder=5, label='Experimental Data')
-                    plt.title("Urban Area Comparison with Experimental Data")
-                elif 50 >= float(MaxDistance.get()) > 20:
-                    plt.semilogx(xs, ys_suburban, linestyle='-', color='purple', label="Suburban")
-                    plt.scatter(d_user, loss_user, color='red', zorder=5, label='Experimental Data')
-                    plt.title("Suburban Area Comparison with Experimental Data")
-                elif float(MaxDistance.get()) > 50:
-                    plt.semilogx(xs, ys_open, linestyle=':', color='orange', label="Open area")
-                    plt.scatter(d_user, loss_user, color='red', zorder=5, label='Experimental Data')
-                    plt.title("Open Area Comparison with Experimental Data")
-
-                plt.legend()
-                plt.grid(True, which="both", linestyle='--', linewidth=0.5)
-                plt.tight_layout()
-                plt.show()
-            else:
-                plt.gca().invert_yaxis()
-                plt.xlabel("Distance (km) [log scale]")
-                plt.ylabel("Path Loss (dB)")
-
-                if 20 >= float(MaxDistance.get()) >= 1:
-                    plt.semilogx(xs, ys_medium, linestyle='--', color='green', label="Urban (Medium city)")
-                    plt.semilogx(xs, ys_dense, linestyle='-.', color='blue', label="Urban (Dense/Large city)")
-                    plt.title("Urban Area Models")
-                elif 50 >= float(MaxDistance.get()) > 20:
-                    plt.semilogx(xs, ys_suburban, linestyle='-', color='purple', label="Suburban")
-                    plt.title("Suburban Area Model")
-                elif float(MaxDistance.get()) > 50:
-                    plt.semilogx(xs, ys_open, linestyle=':', color='orange', label="Open area")
-                    plt.title("Open Area Model")
-
-                plt.legend()
-                plt.grid(True, which="both", linestyle='--', linewidth=0.5)
-                plt.tight_layout()
-                plt.show()
-
-        choiceofpc(d_user,loss_user)
-
-    def sumbitData():
-        try:
-            f = float(freq.get())
-            h_tx = float(Txheight.get())
-            h_rx = float(Rxheight.get())
-            d_min = float(MinDistance.get())
-            d_max = float(MaxDistance.get())
-            slope_threshold = float(salop.get())
-            if f <= 0:
-                return show_error("frenquency error", "La fréquence doit être strictement positive")
-            if not (10 <= h_tx <= 200):
-                return show_error("transmitter heigh erro", "La hauteur Tx doit être entre 10m et 200m")
-            if not (1 <= h_rx <= 10):
-                return show_error("receiver heigh error ", "La hauteur Rx doit être entre 1m et 10m")
-            if d_min <= 0 or d_max <= d_min:
-                return show_error("distance contrainte error ", "Les distances doivent être positives et d_max >d_min")
-
-            if show_points_cb.get():
-                if not filePath:
-                    return show_error("Excel Required", "Please select an Excel file to load experimental data.")
-                d_user, loss_user = read_excel_data(filePath)
-            else:
-                d_user, loss_user = [], []
-            analyze_and_plot(f, h_tx, h_rx, slope_threshold, d_user, loss_user, d_min, d_max)
-
-        except Exception as e:
-            show_error("Error", str(e))
-
-    def checkboxverif():
-        if show_points_cb.get():
-            usb_combo.configure(state="normal")
-            sf.configure(state="normal")
-            be.configure(state="normal")
-            lfu.configure(state="normal")
-        else:
-            usb_combo.configure(state="disabled")
-            sf.configure(state="disabled")
-            be.configure(state="disabled")
-            lfu.configure(state="disabled")
-
-    check_var = customtkinter.BooleanVar(value=False)
-    show_points_cb = customtkinter.CTkCheckBox(option4, text="Show point cloud", variable=check_var, onvalue=True, offvalue=False, height=40, width=200, corner_radius=50)
-    show_points_cb.pack(pady=2)
-    show_points_cb.configure(command=checkboxverif)
-
-    be = customtkinter.CTkButton(option4, text="Browse Excel", command=openFile,state = "disabled", height=40, width=200,corner_radius=50)
-    be.pack(pady=2)
-    customtkinter.CTkLabel(option4, text="Choose Excel from USB:", font=("Helvetica", 14)).pack(pady=5)
-    # ComboBox
-    usb_combo = customtkinter.CTkComboBox(option4, values=[], width=250, height=40, corner_radius=50)
-    usb_combo.pack(pady=2)
-    lfu = customtkinter.CTkButton(option4, text="Load from USB", command=load_from_usb, height=40, width=200,state = "disabled",corner_radius=50)
-    lfu.pack(pady=2)
-    sf = customtkinter.CTkButton(option4, text="Use Selected USB File", command=use_selected_usb_file,state = "disabled", height=40, width=200,corner_radius=50)
-    sf.pack(pady=2)
-    customtkinter.CTkButton(option4, text="Generate Plot", command=sumbitData, height=40, width=200,corner_radius=50).pack(pady=2)
-    customtkinter.CTkButton(option4, text="Clear", command=clearData, height=40, width=200, corner_radius=50).pack(pady=2)
-
-
 
 
 def center_window(window):
@@ -1216,9 +717,6 @@ btn3 = customtkinter.CTkButton(window, text="OPTION 3", height=70, width=200, fo
 btn3.pack(pady=50, ipadx=20)
 ToolTip(btn3, "Manual Point Selector")
 
-btn4 = customtkinter.CTkButton(window, text="OPTION 4", height=70, width=200, font=("Helvetica", 24), hover_color="green",
-                        corner_radius=50, command=click4)
-btn4.pack(pady=50, ipadx=20)
-ToolTip(btn4 , "the three slope model and the cloud piont")
+
 
 window.mainloop()
