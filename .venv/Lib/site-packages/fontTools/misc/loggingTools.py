@@ -6,7 +6,6 @@ from collections.abc import Mapping, Callable
 import warnings
 from logging import PercentStyle
 
-
 # default logging level used by Timer class
 TIME_LEVEL = logging.DEBUG
 
@@ -284,7 +283,7 @@ class Timer(object):
     """
 
     # timeit.default_timer choses the most accurate clock for each platform
-    _time = timeit.default_timer
+    _time: Callable[[], float] = staticmethod(timeit.default_timer)
     default_msg = "elapsed time: %(time).3fs"
     default_format = "Took %(time).3fs to %(msg)s"
 

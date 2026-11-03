@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from functools import lru_cache
+from functools import cache
 from itertools import chain, count
 from typing import Dict, Iterable, Iterator, List, Optional, Set, Tuple
 
@@ -16,7 +16,6 @@ from fontTools import ttLib
 from fontTools.subset.util import _add_method
 from fontTools.ttLib.tables.S_V_G_ import SVGDocument
 
-
 __all__ = ["subset_glyphs"]
 
 
@@ -29,8 +28,7 @@ NAMESPACES = {
 XLINK_HREF = f'{{{NAMESPACES["xlink"]}}}href'
 
 
-# TODO(antrotype): Replace with functools.cache once we are 3.9+
-@lru_cache(maxsize=None)
+@cache
 def xpath(path):
     # compile XPath upfront, caching result to reuse on multiple elements
     return etree.XPath(path, namespaces=NAMESPACES)
